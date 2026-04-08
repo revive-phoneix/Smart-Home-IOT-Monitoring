@@ -5,9 +5,10 @@ Smart Home IoT Monitoring/
 ├── README.md
 ├── LICENSE
 ├── add_power_data.js
-├── Google OAuth.json
+├── .gitignore
 ├── Backend/
 │   ├── package.json
+|   |── .gitignore
 │   ├── jest.config.js
 │   ├── server.js
 │   ├── migrateDevices.js
@@ -46,6 +47,7 @@ Smart Home IoT Monitoring/
 │       ├── lcov.info
 │       └── lcov-report/
 └── Frontend/
+    |── .gitignore
     ├── package.json
     ├── vite.config.js
     ├── eslint.config.js
