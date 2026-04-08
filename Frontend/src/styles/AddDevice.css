@@ -1,0 +1,68 @@
+.add-device-page {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+
+.add-device-card {
+  width: min(550px, 90vw);
+  background: #fff;
+  border: 1px solid #d4d7df;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(13, 22, 50, 0.08);
+  padding: 20px;
+}
+
+.add-device-card h2 {
+  margin: 0 0 16px;
+}
+
+.add-device-card form {
+  display: grid;
+  gap: 10px;
+}
+
+.add-device-card label {
+  display: grid;
+  gap: 5px;
+  font-weight: 600;
+  color: #1f2940;
+}
+
+.add-device-card input,
+.add-device-card select {
+  border: 1px solid #cdd2db;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.96rem;
+}
+
+.add-device-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.add-device-actions button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.add-device-actions button.cancel {
+  background: #f3f4f6;
+  color: #2d3c57;
+}
+
+.add-device-actions button:not(.cancel) {
+  background: #0055e6;
+  color: white;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
