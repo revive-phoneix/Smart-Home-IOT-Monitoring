@@ -67,6 +67,11 @@ const Authentication = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
+      if (isSignup) {
+        setGoogleError("Google Sign-In is available only on Login.");
+        return;
+      }
+
       if (!credentialResponse?.credential) {
         setGoogleError("Google login failed. Try again.");
         return;
@@ -166,7 +171,7 @@ const Authentication = () => {
           </>
         )}
 
-        {googleError && <p className="google-error">{googleError}</p>}
+        {!isSignup && googleError && <p className="google-error">{googleError}</p>}
 
         <p className="bottom-text">
           {isSignup ? "Already have an account?" : "Not a member?"}

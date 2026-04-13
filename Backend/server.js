@@ -18,7 +18,20 @@ const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
 // Restricted CORS Configuration
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:5173").split(",");
+const configuredOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const devOrigins = ["http://localhost:5173", "http://localhost:5174"];
+const allowedOrigins = [
+  ...new Set(
+    process.env.NODE_ENV === "production"
+      ? configuredOrigins
+      : [...configuredOrigins, ...devOrigins]
+  ),
+];
+
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
