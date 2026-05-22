@@ -6,13 +6,15 @@ import {
 	clearAllAlerts,
 	resolveAllAlerts,
 } from "../controllers/AlertControllers.js";
+import { verifyAuth } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", getAlerts);
-router.put("/:id/resolve", resolveAlert);
-router.put("/resolve-all", resolveAllAlerts);
-router.delete("/resolved", clearResolvedAlerts);
-router.delete("/all", clearAllAlerts);
+// All alert routes are protected - require valid JWT
+router.get("/", verifyAuth, getAlerts);
+router.put("/:id/resolve", verifyAuth, resolveAlert);
+router.put("/resolve-all", verifyAuth, resolveAllAlerts);
+router.delete("/resolved", verifyAuth, clearResolvedAlerts);
+router.delete("/all", verifyAuth, clearAllAlerts);
 
 export default router;

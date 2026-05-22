@@ -6,14 +6,20 @@ import { getIO } from "../sockets/socket.js";
 export const toggleDevice = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user.userId;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid device id" });
     }
 
-    const existingDevice = await Device.findById(id).select("status");
+    const existingDevice = await Device.findById(id).select("status userId");
     if (!existingDevice) {
       return res.status(404).json({ message: "Device not found" });
+    }
+
+    // Verify device ownership
+    if (existingDevice.userId.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized - you do not own this device" });
     }
 
     const updatedDevice = await Device.findByIdAndUpdate(
@@ -33,10 +39,11 @@ export const toggleDevice = async (req, res) => {
   }
 };
 
-// NEW: Function to get all devices with power history
+// NEW: Function to get all devices with power history for authenticated user
 export const getDevices = async (req, res) => {
   try {
-    const devices = await Device.find().populate("powerHistory");
+    const userId = req.user.userId;
+    const devices = await Device.find({ userId }).populate("powerHistory");
     res.json(devices);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -45,6 +52,7 @@ export const getDevices = async (req, res) => {
 
 export const createDevice = async (req, res) => {
   try {
+    const userId = req.user.userId;
     const {
       name,
       type,
@@ -59,6 +67,7 @@ export const createDevice = async (req, res) => {
     } = req.body;
 
     const newDevice = await Device.create({
+      userId,
       name,
       type,
       status: false,
@@ -88,12 +97,18 @@ export const createDevice = async (req, res) => {
 export const addPowerHistory = async (req, res) => {
   try {
     const { deviceId } = req.params;
+    const userId = req.user.userId;
     const { Power, Energy } = req.body;
 
     // Get device name and location to include in power history
-    const device = await Device.findById(deviceId);
+    const device = await Device.findById(deviceId).select("userId name location");
     if (!device) {
       return res.status(404).json({ message: "Device not found" });
+    }
+
+    // Verify device ownership
+    if (device.userId.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized - you do not own this device" });
     }
 
     const powerHistoryEntry = await PowerHistory.create({
@@ -126,14 +141,20 @@ export const addPowerHistory = async (req, res) => {
 export const getPowerHistory = async (req, res) => {
   try {
     const { deviceId } = req.params;
+    const userId = req.user.userId;
 
     if (!mongoose.Types.ObjectId.isValid(deviceId)) {
       return res.status(400).json({ message: "Invalid device id" });
     }
 
-    const device = await Device.findById(deviceId).select("name location");
+    const device = await Device.findById(deviceId).select("userId name location");
     if (!device) {
       return res.status(404).json({ message: "Device not found" });
+    }
+
+    // Verify device ownership
+    if (device.userId.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized - you do not own this device" });
     }
 
     let powerHistory = await PowerHistory.find({ deviceId })

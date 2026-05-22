@@ -10,7 +10,8 @@ const normalizeAlert = (alert) => ({
 
 export const getAlerts = async (req, res) => {
   try {
-    const alerts = await Alert.find().sort({ createdAt: -1 });
+    const userId = req.user.userId;
+    const alerts = await Alert.find({ userId }).sort({ createdAt: -1 });
     res.json(alerts.map((alert) => normalizeAlert(alert.toObject())));
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -19,14 +20,15 @@ export const getAlerts = async (req, res) => {
 
 export const resolveAlert = async (req, res) => {
   try {
-    const updatedAlert = await Alert.findByIdAndUpdate(
-      req.params.id,
+    const userId = req.user.userId;
+    const updatedAlert = await Alert.findOneAndUpdate(
+      { _id: req.params.id, userId },
       { status: "RESOLVED", resolvedAt: new Date() },
       { new: true }
     );
 
     if (!updatedAlert) {
-      return res.status(404).json({ message: "Alert not found" });
+      return res.status(404).json({ message: "Alert not found or unauthorized" });
     }
 
     const io = getIO();
@@ -42,7 +44,8 @@ export const resolveAlert = async (req, res) => {
 
 export const clearResolvedAlerts = async (req, res) => {
   try {
-    const result = await Alert.deleteMany({ status: "RESOLVED" });
+    const userId = req.user.userId;
+    const result = await Alert.deleteMany({ userId, status: "RESOLVED" });
 
     const io = getIO();
     if (io) {
@@ -57,7 +60,8 @@ export const clearResolvedAlerts = async (req, res) => {
 
 export const clearAllAlerts = async (req, res) => {
   try {
-    const result = await Alert.deleteMany({});
+    const userId = req.user.userId;
+    const result = await Alert.deleteMany({ userId });
 
     const io = getIO();
     if (io) {
@@ -72,8 +76,9 @@ export const clearAllAlerts = async (req, res) => {
 
 export const resolveAllAlerts = async (req, res) => {
   try {
+    const userId = req.user.userId;
     const result = await Alert.updateMany(
-      { status: { $ne: "RESOLVED" } },
+      { userId, status: { $ne: "RESOLVED" } },
       { $set: { status: "RESOLVED", resolvedAt: new Date() } }
     );
 

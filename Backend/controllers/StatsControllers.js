@@ -2,7 +2,8 @@ import Device from "../models/Device.js";
 
 export const getStats = async (req, res) => {
   try {
-    const devices = await Device.find();
+    const userId = req.user.userId;
+    const devices = await Device.find({ userId });
 
     const totalDevices = devices.length;
     const activeDevices = devices.filter(d => d.status).length;

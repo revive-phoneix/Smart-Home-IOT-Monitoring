@@ -33,8 +33,8 @@ function App() {
           <Route path="devices" element={<Devices />} />
           <Route path="add-device" element={<AddDevice />} />
           <Route path="manual" element={<UserManual />} />
-          <Route path="settings" element={<Settings />} />
         </Route>
+        <Route path="settings" element={<Settings />}/>
       </Routes>
     </>
   );

@@ -2,6 +2,8 @@ import express from "express";
 import http from "http";
 import mongoose from "mongoose";
 import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
 import dotenv from "dotenv";
 import authRoutes from "./routes/AuthRoutes.js";
 import alertRoutes from "./routes/AlertRoutes.js";
@@ -9,6 +11,7 @@ import statsRoutes from "./routes/StatsRoutes.js";
 import deviceRoutes from "./routes/DeviceRoutes.js";
 import { initSocket } from "./sockets/socket.js";
 import { closeMQTT, initMQTT } from "./config/mqtt.js";
+import twoFactorRoutes from "./routes/TwoFactorRoutes.js";
 
 
 dotenv.config();
@@ -44,6 +47,10 @@ const corsOptions = {
 };
 
 // Middleware
+// Security headers
+app.use(helmet());
+// HTTP request logging
+app.use(morgan("tiny"));
 app.use(cors(corsOptions));
 app.use(express.json());
 
@@ -55,6 +62,9 @@ app.use("/api/devices", deviceRoutes);
 
 initSocket(server, allowedOrigins);
 initMQTT();
+
+// Two-factor routes
+app.use("/api/auth/2fa", twoFactorRoutes);
 
 // DB Connection
 mongoose.connect(process.env.MONGO_URI)

@@ -34,10 +34,10 @@ const Settings = () => {
       };
       setIdentity(lookup);
 
-      const params = lookup.userId ? { userId: lookup.userId } : { email: lookup.email };
+      // No query params needed - JWT token in Authorization header handles authentication
       const [profileRes] = await Promise.all([
-        getProfile(params),
-        getUserSettings(params),
+        getProfile(),
+        getUserSettings(),
       ]);
 
       const loadedProfile = profileRes.data || {};
@@ -53,6 +53,8 @@ const Settings = () => {
           name: loadedProfile.name || "",
           email: loadedProfile.email,
           profilePhoto: loadedProfile.profilePhoto || "",
+          // Preserve any existing token in localStorage so authenticated requests continue to work
+          token: storedUser.token,
         };
         localStorage.setItem("smarthome_user", JSON.stringify(freshUser));
         setIdentity({ userId: freshUser.id, email: freshUser.email });
@@ -67,40 +69,6 @@ const Settings = () => {
   useEffect(() => {
     loadSettings();
   }, []);
-
-  const requestIdentity = identity.userId
-    ? { userId: identity.userId }
-    : { email: identity.email || profile.email };
-
-  const saveAccount = async () => {
-    setSaving(true);
-    setStatusMessage("");
-    try {
-      const profileRes = await updateProfile({
-        ...requestIdentity,
-        name: profile.name,
-        email: profile.email,
-        profilePhoto: profile.profilePhoto || "",
-      });
-
-      await updateUserSettings({
-        ...requestIdentity,
-        settings: {},
-      });
-
-      const user = profileRes.data?.user;
-      if (user) {
-        localStorage.setItem("smarthome_user", JSON.stringify(user));
-        setIdentity({ userId: user.id, email: user.email });
-      }
-
-      setStatusMessage("Account settings saved.");
-    } catch (error) {
-      setStatusMessage(error.response?.data?.message || "Failed to save account settings.");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const accountInitials = useMemo(() => {
     const source = (profile.name || "JD").trim();
@@ -141,6 +109,44 @@ const Settings = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("smarthome_user");
     navigate("/");
+  };
+
+  const saveAccount = async () => {
+    setSaving(true);
+    setStatusMessage("");
+    try {
+      const profilePayload = {
+        name: profile.name,
+        email: profile.email,
+        profilePhoto: profile.profilePhoto,
+      };
+
+      const settingsPayload = {
+        userId: identity.userId,
+      };
+
+      await Promise.all([
+        updateProfile(profilePayload),
+        updateUserSettings(settingsPayload),
+      ]);
+
+      const existingUser = JSON.parse(localStorage.getItem("smarthome_user") || "{}");
+      const freshUser = {
+        id: identity.userId || undefined,
+        name: profile.name || "",
+        email: profile.email || "",
+        profilePhoto: profile.profilePhoto || "",
+        // Preserve token if present so the user stays authenticated
+        token: existingUser.token,
+      };
+      localStorage.setItem("smarthome_user", JSON.stringify(freshUser));
+      setStatusMessage("Settings saved successfully.");
+    // eslint-disable-next-line no-unused-vars
+    } catch (err) {
+      setStatusMessage("Failed to save settings. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const accountPanel = (

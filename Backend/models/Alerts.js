@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const alertSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   deviceId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Device",

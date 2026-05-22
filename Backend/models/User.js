@@ -33,6 +33,7 @@ const userSchema = new mongoose.Schema({
     },
     security: {
       twoFactorEnabled: { type: Boolean, default: false },
+      twoFactorSecret: { type: String, default: null },
     },
   },
 });
